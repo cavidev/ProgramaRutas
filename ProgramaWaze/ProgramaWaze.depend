@@ -1,0 +1,16 @@
+# depslib dependency file v1.0
+1446268614 source:c:\users\carlos mario\documents\documentos de la u\segundo semestre\estructuras de datos\proyectoprogramado2\programawaze\main.cpp
+	<iostream>
+	<stdio.h>
+	<string>
+	<list>
+
+1447465293 source:c:\users\carlos mario\desktop\proyectoprogramado2(pruebas)\programawaze\main.cpp
+	<iostream>
+	<stdio.h>
+	<string>
+	<list>
+	<fstream>
+	<string.h>
+	<stdlib.h>
+

@@ -1,0 +1,326 @@
+/******************************* Código de Ciudadades *****************************/
+/**********************************************************************************/
+void InsertarCiudad(string nombreLugar)
+{
+    /** \brief Inserta la ciudades nuevas a la lista mapasCiudades..
+     *
+     * \param nombreLugar: es el nombre del nuevo lugar por crear, si ya existe no lo agregar
+     * \return NULL
+     *
+     */
+    struct Ciudades * nnC = new Ciudades(nombreLugar);
+    nnC->sigCiudad = mapaCiudades;
+    mapaCiudades = nnC;
+}
+void InsertarDatosCiudad()
+{
+    /** \brief Funcion que pide al usuario el nombre de la nueva ciudad y llama a la funcion para insertarla
+    en la lista de ciudades..
+     *
+     * \param NULL
+     * \return NULL
+     *
+     */
+    string nombreLugar;
+    string colorLugar;
+    cout<<"\n\tDigite el nombre de la ciudad Nueva"<<endl;
+    cout<<"***";
+    cin>>nombreLugar;
+    if(buscar(nombreLugar) != NULL){
+        cout<<"\n\t\t**********La ciudad con ese nombre ya existe..**********\n"<<endl;
+        return;
+    }
+    else
+    {
+        InsertarCiudad(nombreLugar);
+        cout<<"\n\t\t**********Se agrego con exito la ciuadad..**********\n"<<endl;
+		return;
+    }
+}
+void VerCiudades()
+{
+    /** \brief Imprime todas las ciudades que se encuentra  en el mapa con sus respectivos destinos
+     *
+     * \param NULL
+     * \param NULL
+     * \return NULL
+     *
+     */
+
+    int contador = 1;
+    struct Ciudades * tempCiudades = mapaCiudades;
+    struct Caminos * tempCaminos;
+    cout<<"\n\tLa ciudades en el mapa son:\n "<<endl;
+    while(tempCiudades != NULL)
+    {
+        cout<<"\t  "<<contador<<" "<<tempCiudades->nombreCiudad<<endl;
+        tempCaminos = tempCiudades->subListaCaminos;
+        cout<<"\t\t  Sus rutas son: "<<endl;
+        while(tempCaminos != NULL)
+        {
+            cout<<"\t\t\t  "<<tempCiudades->nombreCiudad<<" a "<<tempCaminos->CiudadDestino->nombreCiudad<<endl;
+            tempCaminos = tempCaminos->sigCamino;
+        }
+        contador++;
+        tempCiudades = tempCiudades->sigCiudad;
+    }
+    cout<<"\n\n";
+}
+void BorrarCiudad()
+{
+    /** \brief Borra la ciudad deseada, primero borra los caminos que vallas hacia ella y luego la borra
+    de la lista de ciudades...
+     *
+     * \param
+     * \param
+     * \return
+     *
+     */
+
+    string nombreCiudad;
+    cout<<"Digite el nombre de la Ciudad a borrar"<<endl;
+    cout<<"***";
+    cin>>nombreCiudad;
+    struct Ciudades * ciudadEncontrada = buscar(nombreCiudad);
+    if(ciudadEncontrada == NULL)
+        cout<<"Ciudad no Existe"<<endl;
+    else
+        {
+            struct Ciudades * tempCiudades = mapaCiudades;
+            struct Caminos * tempCaminoAnterior;///Guarda el camino antes de el que se va a eliminado
+            ///Borra las rutas que van hacia la ciudad que se quiere borrar...
+            while(tempCiudades != NULL)
+            {
+            	if (tempCiudades->subListaCaminos == NULL){
+            		continue;
+				}
+                if(tempCiudades->subListaCaminos->CiudadDestino->nombreCiudad == nombreCiudad)
+                {
+                    tempCaminoAnterior = tempCiudades->subListaCaminos->sigCamino;
+                    delete tempCiudades->subListaCaminos;
+                    tempCiudades->subListaCaminos = tempCaminoAnterior;
+                }
+                else
+                {
+                    struct Caminos * tempCamino = tempCiudades->subListaCaminos;
+                    tempCaminoAnterior = tempCamino;
+                    while(tempCamino != NULL)
+                    {
+                        if(tempCamino->CiudadDestino->nombreCiudad == nombreCiudad)
+                        {
+                            tempCaminoAnterior->sigCamino = tempCamino->sigCamino;
+                            delete tempCamino;
+
+                        }
+                        tempCaminoAnterior = tempCamino;
+                        tempCamino = tempCamino->sigCamino;
+                    }
+                }
+                tempCiudades = tempCiudades->sigCiudad;
+            }
+            ///Borra la ciudad de la lista Ciudades
+            tempCiudades = mapaCiudades;
+            struct Ciudades * ciudadAnterior;
+
+            if(mapaCiudades->nombreCiudad == nombreCiudad)
+            {
+                ciudadAnterior = mapaCiudades->sigCiudad;
+                delete mapaCiudades;
+                mapaCiudades = ciudadAnterior;
+            }
+            else
+            {
+                ciudadAnterior = mapaCiudades;
+                while(tempCiudades != NULL)
+                {
+                    if(tempCiudades->nombreCiudad == nombreCiudad)
+                    {
+                        if(tempCiudades->sigCiudad == NULL)
+                        {
+                           ciudadAnterior->sigCiudad = NULL;
+                           delete tempCiudades;
+                        }
+                        ciudadAnterior->sigCiudad = tempCiudades->sigCiudad;
+                        delete tempCiudades;
+                    }
+                    ciudadAnterior = tempCiudades;
+                    tempCiudades = tempCiudades->sigCiudad;
+                }
+
+            }
+        }
+}
+/********************************** Código de Caminos *****************************/
+/**********************************************************************************/
+void InsertarCaminos(struct Ciudades * cOrigen, struct Ciudades * cDestino, int distancia, int velocidad,bool dirigido)
+{
+    /**\brief Inserta los nuevos caminos de una ciudad a otra.. Si no se encuentra, no agregara nada
+     *
+     * \param cudadOrigen: el nombre de la ciudad de Origen;
+            ciudadDestino: el nombre de la ciudad hacia donde el camino va;
+            distancia: kilometros que posee esa carretera
+            velociadad: la velocidad a la que puede ir un automovil.
+     * \return NULL
+     *
+     */
+    if(cOrigen == NULL || cDestino == NULL){
+        cout<<"\n\t\t**********Datos Inexistentes..**********"<<endl;
+        return;
+    }
+    else{
+	    struct Caminos * nnCamino = new Caminos(distancia,velocidad,dirigido,cDestino);
+	    nnCamino->sigCamino = cOrigen->subListaCaminos;
+	    cOrigen->subListaCaminos = nnCamino;
+	    cout<<"\n\t****Se inserto con exito****"<<endl;
+	}
+}
+void InsertarDatosCaminos()
+{
+    /** \brief Inserta los datos de los caminos, si el camino origen tiene el mismo color que el camino destino no se
+    inserta.....
+     *
+     * \param
+     * \param
+     * \return
+     *
+     */
+
+    string ciudadDestino;
+    string ciudadOrigen;
+    int distancia;
+    int velocidad;
+    string dirigido;
+    cout<<"Digite la ciudad Origen\n***";
+    cin>>ciudadOrigen;
+    cout<<"Digite la ciudad Destino\n***";
+    cin>>ciudadDestino;
+    struct Ciudades * COrigen = buscar(ciudadOrigen);
+    struct Ciudades * CDestino = buscar(ciudadDestino);
+    cout<<"Digite la velocidad en k/h permitida\n***";
+    cin>>velocidad;
+    cout<<"Digite la distancia\n***";
+    cin>>distancia;
+    cout<<"Digite si el camino es Ida y Vuelta\n(si/no)\n***";
+    cin>>dirigido;
+
+    if(dirigido == "si")
+        {
+            InsertarCaminos(CDestino,COrigen,distancia,velocidad, true);
+            InsertarCaminos(COrigen,CDestino,distancia,velocidad,true);
+        }
+    else
+        {
+            InsertarCaminos(COrigen,CDestino,distancia,velocidad,false);
+        }
+}
+void VerCaminosCiudad(struct Ciudades * inicio)
+{
+    /** \brief Imprime los caminos de una ciudad ingresada por el usuario, hacias los destinos que este tenga...
+     *
+     * \param estructura del camino buscado
+     * \param
+     * \return
+     *
+     */
+
+    if(inicio == NULL)
+        return;
+    struct Caminos * tempCaminos= inicio->subListaCaminos;
+    if (tempCaminos == NULL){
+    	cout<<"Esta ciudad no posee caminos"<<endl;
+    	return;
+	}
+    while(tempCaminos != NULL)
+    {
+        cout<<"\t\t"<<inicio->nombreCiudad<<" a "<<tempCaminos->CiudadDestino->nombreCiudad<<endl;
+        tempCaminos = tempCaminos->sigCamino;
+    }
+    cout<<"\n\n";
+
+}
+void AuxVerCaminosCiudad()
+{
+    /** \brief Es la funcion que ayuda a la busquedad de un camino y sus rutas
+     *
+     * \param
+     * \param
+     * \return
+     *
+     */
+
+    string nombreCiudad;
+    cout<<"Digite el nombre de la Ciudad"<<endl;
+    cin>>nombreCiudad;
+    struct Ciudades * temp = buscar(nombreCiudad);
+    if(temp == NULL)
+        cout<<"Ciudad no Existe"<<endl;
+    else
+        VerCaminosCiudad(temp);
+}
+
+
+//Borra un camino entre dos ciudades. Las ciudades se reciben en una funcion aparte para la recepcion de datos y utilizan la funcion buscar 
+void BorrarCamino(struct Ciudades * tempO,struct Ciudades * tempD){
+	if (tempO == NULL or tempD == NULL){
+		cout<<"Datos Incorrectos"<<endl;
+		return;
+	}
+	else{
+		if (tempO->subListaCaminos == NULL){
+				cout<<"La Ciudad origen no tiene caminos...";
+				return;
+			}
+		else if(tempO->subListaCaminos->CiudadDestino->nombreCiudad == tempD->nombreCiudad){
+			struct Caminos * tempCamino = tempO->subListaCaminos;
+			tempO->subListaCaminos = tempO->subListaCaminos->sigCamino;
+			tempCamino->sigCamino = NULL;
+			delete tempCamino;
+			   
+			}
+		else{
+		struct Caminos * tempCamino = tempO-> subListaCaminos;
+		struct Caminos * tempAnterior = tempO-> subListaCaminos;
+		while (tempCamino != NULL){
+			if (tempCamino->	CiudadDestino->nombreCiudad == tempD->nombreCiudad){
+				tempAnterior->sigCamino = tempCamino->sigCamino;
+				tempCamino->sigCamino = NULL;
+				delete tempCamino;
+				}
+			tempAnterior = tempCamino;
+			tempCamino = tempCamino->sigCamino;
+			}
+		
+		}
+	}
+}
+
+void ModificarCamino(struct Ciudades * tempO,struct Ciudades * tempD){
+if (tempO == NULL or tempD == NULL){
+		cout<<"Datos Incorrectos"<<endl;
+		return;
+	}
+	else{
+		if (tempO->subListaCaminos == NULL){
+				cout<<"La Ciudad origen no tiene caminos...";
+				return;
+			}
+		else{
+			struct Caminos * tempCamino = tempO-> subListaCaminos;
+			while (tempCamino!= NULL){
+				if(tempCamino->CiudadDestino->nombreCiudad == tempD->nombreCiudad){
+					int nVelocidad;
+					int nDistancia;
+					cout<<"Digite la nueva distancia a asignar"<<endl;
+					cin>>nDistancia;
+					cout<<"Digite la nueva velocidad en k/h a asignar"<<endl;
+					cin>>nVelocidad;
+					tempCamino->distanciaKm = nDistancia;
+					tempCamino->velocidad = nVelocidad;
+					cout<<"**** Modificado con exito ****"<<endl;
+					return;
+				}
+				tempCamino = tempCamino->sigCamino; 
+			}
+		}
+	}
+}
